@@ -500,50 +500,47 @@ body {
 
 .auth-section {
     margin-top: auto;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border-color);
+    padding-top: 0.5rem;
 }
 
 .sign-in-btn {
-    display: flex; align-items: center; gap: 0.6rem;
-    width: 100%; padding: 0.7rem 1rem; border: 1px solid var(--border-color);
-    background: var(--bg-card); border-radius: var(--radius-sm);
-    cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
-    font-weight: 600; color: var(--text-primary); transition: border-color 0.2s;
+    display: flex; align-items: center; gap: 0.5rem;
+    width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--border-light);
+    background: transparent; border-radius: var(--radius-sm);
+    cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.75rem;
+    font-weight: 500; color: var(--text-tertiary); transition: color 0.2s;
 }
-.sign-in-btn:hover { border-color: var(--text-secondary); }
-.sign-in-btn img { width: 18px; height: 18px; }
+.sign-in-btn:hover { color: var(--text-secondary); border-color: var(--border-color); }
+.sign-in-btn img { width: 14px; height: 14px; opacity: 0.5; }
 
 .user-info {
-    display: flex; align-items: center; gap: 0.6rem;
-    padding: 0.5rem 0;
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0;
 }
-.user-avatar {
-    width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border-color);
+.user-avatar { display: none; }
+.user-initial {
+    width: 20px; height: 20px; border-radius: 50%; background: var(--primary-accent);
+    color: #fff; font-size: 0.6rem; font-weight: 700; display: flex;
+    align-items: center; justify-content: center; flex-shrink: 0;
+    font-family: 'Inter Tight', sans-serif;
 }
 .user-details { flex: 1; min-width: 0; }
 .user-name {
-    font-size: 0.8rem; font-weight: 600; color: var(--text-primary);
+    font-size: 0.7rem; font-weight: 500; color: var(--text-tertiary);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.user-email {
-    font-size: 0.7rem; color: var(--text-secondary);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
+.user-email { display: none; }
 .sign-out-btn {
     background: none; border: none; color: var(--text-tertiary);
-    font-size: 0.75rem; font-weight: 500; cursor: pointer; padding: 0.3rem 0;
-    font-family: 'DM Sans', sans-serif;
+    font-size: 0.65rem; font-weight: 400; cursor: pointer; padding: 0;
+    font-family: 'DM Sans', sans-serif; opacity: 0; transition: opacity 0.2s;
 }
+.auth-section:hover .sign-out-btn { opacity: 1; }
 .sign-out-btn:hover { color: var(--accent-pop); }
 
-.sync-badge {
-    display: inline-flex; align-items: center; gap: 0.3rem;
-    font-size: 0.65rem; color: var(--primary-accent); font-weight: 600;
-    margin-top: 0.3rem;
-}
+.sync-badge { display: none; }
 .sync-dot {
-    width: 6px; height: 6px; background: var(--primary-accent);
+    width: 5px; height: 5px; background: var(--primary-accent);
     border-radius: 50%; display: inline-block;
 }
     </style>
@@ -992,16 +989,15 @@ auth.onAuthStateChanged(user => {
     const authSection = document.getElementById('auth-section');
     if (user) {
         dbRef = db.ref('users/' + user.uid);
+        const initial = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
         authSection.innerHTML = `
             <div class="user-info">
-                <img class="user-avatar" src="${user.photoURL || ''}" alt="" referrerpolicy="no-referrer">
+                <div class="user-initial">${initial}</div>
                 <div class="user-details">
-                    <div class="user-name">${user.displayName || 'User'}</div>
-                    <div class="user-email">${user.email || ''}</div>
-                    <div class="sync-badge"><span class="sync-dot"></span> Synced</div>
+                    <div class="user-name"><span class="sync-dot"></span> ${user.displayName || 'Synced'}</div>
                 </div>
-            </div>
-            <button class="sign-out-btn" onclick="signOut()">Sign out</button>`;
+                <button class="sign-out-btn" onclick="signOut()">✕</button>
+            </div>`;
         // Upload any existing localStorage data to Firebase on first sign-in, then load from Firebase
         migrateLocalToFirebase().then(() => {
             listenForFirebaseChanges();
