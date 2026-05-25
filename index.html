@@ -11,6 +11,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Smile">
     <link rel="apple-touch-icon" href="icon-192.png">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter+Tight:wght@400;500;600;700&display=swap');
 
@@ -493,6 +497,55 @@ body {
     .goals-grid, .exercises-grid, .breakdown-grid { grid-template-columns: 1fr; }
     .books-grid { grid-template-columns: 1fr !important; }
 }
+
+.auth-section {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.sign-in-btn {
+    display: flex; align-items: center; gap: 0.6rem;
+    width: 100%; padding: 0.7rem 1rem; border: 1px solid var(--border-color);
+    background: var(--bg-card); border-radius: var(--radius-sm);
+    cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+    font-weight: 600; color: var(--text-primary); transition: border-color 0.2s;
+}
+.sign-in-btn:hover { border-color: var(--text-secondary); }
+.sign-in-btn img { width: 18px; height: 18px; }
+
+.user-info {
+    display: flex; align-items: center; gap: 0.6rem;
+    padding: 0.5rem 0;
+}
+.user-avatar {
+    width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border-color);
+}
+.user-details { flex: 1; min-width: 0; }
+.user-name {
+    font-size: 0.8rem; font-weight: 600; color: var(--text-primary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.user-email {
+    font-size: 0.7rem; color: var(--text-secondary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sign-out-btn {
+    background: none; border: none; color: var(--text-tertiary);
+    font-size: 0.75rem; font-weight: 500; cursor: pointer; padding: 0.3rem 0;
+    font-family: 'DM Sans', sans-serif;
+}
+.sign-out-btn:hover { color: var(--accent-pop); }
+
+.sync-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    font-size: 0.65rem; color: var(--primary-accent); font-weight: 600;
+    margin-top: 0.3rem;
+}
+.sync-dot {
+    width: 6px; height: 6px; background: var(--primary-accent);
+    border-radius: 50%; display: inline-block;
+}
     </style>
 </head>
 <body>
@@ -506,6 +559,12 @@ body {
                 <button class="sidebar-btn" data-page="tracker">Tracker</button>
                 <button class="sidebar-btn" data-page="reading">Reading</button>
             </nav>
+            <div class="auth-section" id="auth-section">
+                <button class="sign-in-btn" id="sign-in-btn" onclick="signInWithGoogle()">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
+                    Sign in to sync
+                </button>
+            </div>
         </aside>
 
         <!-- Pages Container -->
@@ -898,7 +957,121 @@ body {
     </div>
 
     <script>
-// Initialize app
+// ====== FIREBASE CONFIG ======
+const firebaseConfig = {
+    apiKey: "AIzaSyDzFOeS1rceLOm8fhn2v8pBB8vMZbbp3SE",
+    authDomain: "smile-e257a.firebaseapp.com",
+    databaseURL: "https://smile-e257a-default-rtdb.firebaseio.com",
+    projectId: "smile-e257a",
+    storageBucket: "smile-e257a.firebasestorage.app",
+    messagingSenderId: "918355092905",
+    appId: "1:918355092905:web:8b1fc595851db2d8a010b8"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+let currentUser = null;
+let dbRef = null;
+
+// ====== AUTH ======
+function signInWithGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).catch(err => {
+        console.error('Sign-in error:', err);
+        alert('Sign-in failed. Please try again.');
+    });
+}
+
+function signOut() {
+    auth.signOut();
+}
+
+auth.onAuthStateChanged(user => {
+    currentUser = user;
+    const authSection = document.getElementById('auth-section');
+    if (user) {
+        dbRef = db.ref('users/' + user.uid);
+        authSection.innerHTML = `
+            <div class="user-info">
+                <img class="user-avatar" src="${user.photoURL || ''}" alt="" referrerpolicy="no-referrer">
+                <div class="user-details">
+                    <div class="user-name">${user.displayName || 'User'}</div>
+                    <div class="user-email">${user.email || ''}</div>
+                    <div class="sync-badge"><span class="sync-dot"></span> Synced</div>
+                </div>
+            </div>
+            <button class="sign-out-btn" onclick="signOut()">Sign out</button>`;
+        // Upload any existing localStorage data to Firebase on first sign-in, then load from Firebase
+        migrateLocalToFirebase().then(() => {
+            listenForFirebaseChanges();
+        });
+    } else {
+        dbRef = null;
+        authSection.innerHTML = `
+            <button class="sign-in-btn" id="sign-in-btn" onclick="signInWithGoogle()">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
+                Sign in to sync
+            </button>`;
+        refreshAllViews();
+    }
+});
+
+// ====== DATA LAYER ======
+// getData/setData: always read/write localStorage; if signed in, also sync to Firebase
+function getData(key) {
+    try { return JSON.parse(localStorage.getItem(key)) || null; }
+    catch { return null; }
+}
+
+function setData(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+    if (dbRef) dbRef.child(key).set(value);
+}
+
+async function migrateLocalToFirebase() {
+    if (!dbRef) return;
+    const snapshot = await dbRef.once('value');
+    const cloudData = snapshot.val();
+    if (cloudData) {
+        // Cloud data exists — use it (overwrite local)
+        if (cloudData.workout) localStorage.setItem('workout', JSON.stringify(cloudData.workout));
+        if (cloudData.trades) localStorage.setItem('trades', JSON.stringify(cloudData.trades));
+        if (cloudData.reading) localStorage.setItem('reading', JSON.stringify(cloudData.reading));
+    } else {
+        // No cloud data — push local data up
+        const workout = getData('workout');
+        const trades = getData('trades');
+        const reading = getData('reading');
+        const upload = {};
+        if (workout) upload.workout = workout;
+        if (trades) upload.trades = trades;
+        if (reading) upload.reading = reading;
+        if (Object.keys(upload).length > 0) await dbRef.set(upload);
+    }
+    refreshAllViews();
+}
+
+function listenForFirebaseChanges() {
+    if (!dbRef) return;
+    dbRef.on('value', snapshot => {
+        const data = snapshot.val();
+        if (!data) return;
+        if (data.workout) localStorage.setItem('workout', JSON.stringify(data.workout));
+        if (data.trades) localStorage.setItem('trades', JSON.stringify(data.trades));
+        if (data.reading) localStorage.setItem('reading', JSON.stringify(data.reading));
+        refreshAllViews();
+    });
+}
+
+function refreshAllViews() {
+    updateHomePageSummary();
+    displayWorkoutProgress();
+    displayTradeProgress();
+    displayReadingProgress();
+}
+
+// ====== INIT ======
 document.addEventListener('DOMContentLoaded', init);
 
 document.querySelectorAll('.sidebar-btn').forEach(btn => {
@@ -908,11 +1081,7 @@ document.querySelectorAll('.sidebar-btn').forEach(btn => {
 const today = new Date().toISOString().split('T')[0];
 
 function init() {
-    loadAllData();
-    updateHomePageSummary();
-    displayWorkoutProgress();
-    displayTradeProgress();
-    displayReadingProgress();
+    refreshAllViews();
     setDefaultDates();
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').catch(() => {});
@@ -936,6 +1105,7 @@ function goToPage(pageName) {
     else if (pageName === 'reading') displayReadingProgress();
 }
 
+// ====== WORKOUT ======
 const workoutGoals = {
     weight: { goal: 70, unit: 'kg' },
     pullup: { weight: 40, reps: 8, unit: 'kg' },
@@ -960,15 +1130,15 @@ function saveWorkoutData(exercise) {
         data.date = document.getElementById(`${exercise}-date`).value;
     }
     if (Object.values(data).some(v => v === '')) { alert('Please fill in all fields'); return; }
-    let workout = JSON.parse(localStorage.getItem('workout')) || {};
+    let workout = getData('workout') || {};
     workout[exercise] = data;
-    localStorage.setItem('workout', JSON.stringify(workout));
+    setData('workout', workout);
     displayWorkoutProgress();
     alert('Workout data saved!');
 }
 
 function displayWorkoutProgress() {
-    const workout = JSON.parse(localStorage.getItem('workout')) || {};
+    const workout = getData('workout') || {};
     if (workout.weight) {
         const weight = parseFloat(workout.weight.value);
         const goal = workoutGoals.weight.goal;
@@ -1001,21 +1171,22 @@ function calculateDaysLeft(goalDate) {
     return Math.ceil((new Date(goalDate) - new Date()) / (1000 * 60 * 60 * 24));
 }
 
+// ====== READING ======
 function saveReading(book) {
     let data = {};
     if (book === 'principles') { data.page = document.getElementById('principles-page').value; data.total = document.getElementById('principles-total').value; }
     else if (book === 'habits') { data.page = document.getElementById('habits-page').value; data.total = document.getElementById('habits-total').value; }
     else if (book === 'power') { data.chapter = document.getElementById('power-chapter').value; data.total = document.getElementById('power-total').value; }
     if (Object.values(data).some(v => v === '')) { alert('Please fill in all fields'); return; }
-    let reading = JSON.parse(localStorage.getItem('reading')) || {};
+    let reading = getData('reading') || {};
     reading[book] = data;
-    localStorage.setItem('reading', JSON.stringify(reading));
+    setData('reading', reading);
     displayReadingProgress();
     alert('Reading progress saved!');
 }
 
 function displayReadingProgress() {
-    const reading = JSON.parse(localStorage.getItem('reading')) || {};
+    const reading = getData('reading') || {};
     const books = [
         { id: 'principles', pageId: 'principles-page', totalId: 'principles-total', displayId: 'principles-display', type: 'pages' },
         { id: 'habits', pageId: 'habits-page', totalId: 'habits-total', displayId: 'habits-display', type: 'pages' },
@@ -1040,20 +1211,21 @@ function displayReadingProgress() {
     });
 }
 
+// ====== TRADES ======
 function addTrade() {
     const size = parseInt(document.getElementById('trade-size').value);
     const profit = parseFloat(document.getElementById('trade-profit').value);
     if (!profit || profit <= 0) { alert('Please enter a valid profit amount'); return; }
-    let trades = JSON.parse(localStorage.getItem('trades')) || [];
+    let trades = getData('trades') || [];
     trades.push({ size, profit, date: today, id: Date.now() });
-    localStorage.setItem('trades', JSON.stringify(trades));
+    setData('trades', trades);
     document.getElementById('trade-profit').value = '';
     displayTradeProgress();
     alert('Trade logged!');
 }
 
 function displayTradeProgress() {
-    const trades = JSON.parse(localStorage.getItem('trades')) || [];
+    const trades = getData('trades') || [];
     const goal = 30000;
     const bySize = { 50: { earned: 0, count: 0 }, 100: { earned: 0, count: 0 }, 500: { earned: 0, count: 0 }, 1000: { earned: 0, count: 0 } };
     let totalEarned = 0;
@@ -1080,10 +1252,11 @@ function displayTradeHistory(trades) {
     `).join('');
 }
 
+// ====== HOME PAGE ======
 function updateHomePageSummary() { updateWorkoutSummary(); updateTrackerSummary(); updateReadingSummary(); }
 
 function updateReadingSummary() {
-    const reading = JSON.parse(localStorage.getItem('reading')) || {};
+    const reading = getData('reading') || {};
     const summaryDiv = document.getElementById('home-reading-summary');
     const books = [
         { id: 'principles', name: 'Principles', type: 'pages' },
@@ -1113,7 +1286,7 @@ function calculateCountdown(targetDate) {
 }
 
 function updateWorkoutSummary() {
-    const workout = JSON.parse(localStorage.getItem('workout')) || {};
+    const workout = getData('workout') || {};
     const summaryDiv = document.getElementById('home-workout-summary');
     const daysLeft = calculateCountdown('2026-09-01');
     let summaryHTML = `<div class="goal-item goal-header"><span class="goal-item-name"></span><span class="goal-item-current">Current</span><span class="goal-item-goal">Goal</span><span class="goal-item-pct"></span></div>`;
@@ -1140,7 +1313,7 @@ function updateWorkoutSummary() {
 }
 
 function updateTrackerSummary() {
-    const trades = JSON.parse(localStorage.getItem('trades')) || [];
+    const trades = getData('trades') || [];
     const summaryDiv = document.getElementById('home-trade-summary');
     const daysLeft = calculateCountdown('2026-12-31');
     let totalEarned = 0;
@@ -1154,7 +1327,6 @@ function updateTrackerSummary() {
 }
 
 function formatDate(dateString) { return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
-function loadAllData() {}
 
 window.addEventListener('load', () => {
     document.querySelectorAll('input[type="date"]:not([value])').forEach(input => { input.value = today; });
