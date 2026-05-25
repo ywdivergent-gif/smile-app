@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smile</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%232D5A3D'/><circle cx='35' cy='40' r='5' fill='%23fff'/><circle cx='65' cy='40' r='5' fill='%23fff'/><path d='M 30 60 Q 50 75 70 60' stroke='%23fff' stroke-width='4' fill='none' stroke-linecap='round'/></svg>" type="image/svg+xml">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2D5A3D">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Smile">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter+Tight:wght@400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-accent: #2D5A3D;
+    --accent-pop: #E07A3A;
+    --bg-main: #FFFFFF;
+    --bg-surface: #F4F1EC;
+    --bg-card: #FFFFFF;
+    --text-primary: #1A1A1A;
+    --text-secondary: #8A8A8A;
+    --text-tertiary: #B0B0B0;
+    --border-color: #E0DDD6;
+    --border-light: #ECEAE4;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.08);
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+}
+
+body {
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+.app-container {
+    display: flex;
+    height: 100vh;
+    gap: 0;
+}
+
+.sidebar-nav {
+    width: 220px;
+    background: var(--bg-main);
+    border-right: 1px solid var(--border-color);
+    padding: 3rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3.5rem;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+
+.sidebar-brand {
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+}
+
+.sidebar-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.sidebar-btn {
+    padding: 0.75rem 1rem;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: color 0.2s ease;
+    text-align: left;
+    letter-spacing: -0.2px;
+}
+
+.sidebar-btn:hover { color: var(--text-primary); }
+
+.sidebar-btn.active {
+    background: var(--primary-accent);
+    color: #FFFFFF;
+    font-weight: 600;
+}
+
+.pages-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem 3rem;
+    background: var(--bg-surface);
+}
+
+.page { display: none; animation: fadeIn 0.3s ease-in; }
+.page.active { display: block; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.page-header { margin-bottom: 1.5rem; }
+
+.page-header h1 {
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 1.6rem;
+    color: var(--text-primary);
+    margin-bottom: 0.3rem;
+    font-weight: 700;
+    letter-spacing: -1px;
+}
+
+.page-header p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+
+.goals-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+}
+
+.goal-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    transition: border-color 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.goal-card:hover { border-color: var(--text-tertiary); }
+
+.goal-card h3 {
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.goal-items {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+}
+
+.goal-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.goal-item:last-of-type { border-bottom: none; }
+
+.goal-item-name { color: var(--text-primary); font-weight: 500; font-size: 0.9rem; }
+
+.goal-item-current {
+    text-align: right; font-weight: 500; color: var(--text-secondary);
+    min-width: 70px; font-size: 0.85rem; font-family: 'Inter Tight', sans-serif;
+}
+
+.goal-item-goal {
+    text-align: right; font-weight: 700; color: var(--text-primary);
+    min-width: 70px; font-size: 0.95rem; font-family: 'Inter Tight', sans-serif;
+}
+
+.goal-item-pct {
+    text-align: right; font-weight: 700; color: var(--accent-pop);
+    min-width: 40px; font-size: 0.85rem; font-family: 'Inter Tight', sans-serif;
+}
+
+.goal-header-row { display: none; }
+
+.goal-item.goal-header {
+    background: transparent; border: none;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 0 0.5rem 0; margin-bottom: 0;
+}
+
+.goal-item.goal-header .goal-item-name,
+.goal-item.goal-header .goal-item-current,
+.goal-item.goal-header .goal-item-goal {
+    font-size: 0.75rem; font-weight: 600; color: var(--text-tertiary);
+    text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+.countdown-section { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border-color); }
+.countdown-text { font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; }
+
+.card-link-btn {
+    background: var(--primary-accent); color: #FFFFFF; border: none;
+    padding: 0.65rem 1.25rem; border-radius: var(--radius-sm);
+    cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 600;
+    transition: opacity 0.2s ease; width: 100%; font-size: 0.8rem;
+    letter-spacing: -0.2px; margin-top: auto;
+}
+
+.card-link-btn:hover { opacity: 0.85; }
+
+.workout-container { display: flex; flex-direction: column; gap: 2rem; }
+
+.exercises-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem;
+}
+
+.workout-card {
+    background: var(--bg-card); border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg); padding: 1.75rem;
+    transition: border-color 0.2s ease;
+}
+
+.workout-card:hover { border-color: var(--text-tertiary); }
+
+.card-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem; }
+.card-header h3 { font-family: 'Inter Tight', sans-serif; font-size: 1rem; color: var(--text-primary); font-weight: 600; }
+
+.card-label {
+    background: var(--bg-surface); color: var(--text-primary);
+    padding: 0.3rem 0.75rem; border-radius: var(--radius-sm);
+    font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border-color);
+    font-family: 'Inter Tight', sans-serif;
+}
+
+.workout-card h3 {
+    font-family: 'Inter Tight', sans-serif; font-size: 1rem;
+    color: var(--text-primary); margin-bottom: 0.5rem; font-weight: 600;
+}
+
+.exercise-goal {
+    display: inline-block; background: var(--bg-surface); color: var(--text-secondary);
+    padding: 0.35rem 0.75rem; border-radius: var(--radius-sm); font-size: 0.8rem;
+    font-weight: 600; margin-bottom: 1rem; font-family: 'Inter Tight', sans-serif;
+    letter-spacing: -0.2px;
+}
+
+.card-content { display: flex; flex-direction: column; gap: 1rem; }
+
+.input-group { display: flex; flex-direction: column; gap: 0.4rem; }
+
+.input-group label {
+    font-weight: 500; color: var(--text-secondary); font-size: 0.8rem;
+    text-transform: uppercase; letter-spacing: 0.3px;
+}
+
+.input-group input, .input-group select {
+    padding: 0.7rem 0.85rem; border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm); font-size: 0.95rem;
+    font-family: 'DM Sans', sans-serif; transition: border-color 0.2s ease;
+    background: var(--bg-main); color: var(--text-primary);
+}
+
+.input-group input:focus, .input-group select:focus { outline: none; border-color: var(--text-primary); }
+
+.input-group-inline {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem; align-items: end;
+}
+
+.btn-primary {
+    background: var(--primary-accent); color: #FFFFFF; border: none;
+    padding: 0.7rem 1.5rem; border-radius: var(--radius-sm); font-size: 0.9rem;
+    font-family: 'DM Sans', sans-serif; font-weight: 600; cursor: pointer;
+    transition: opacity 0.2s ease; letter-spacing: -0.2px;
+}
+
+.btn-primary:hover { opacity: 0.85; }
+.btn-primary:active { opacity: 0.75; }
+
+.progress-display {
+    margin-top: 0.75rem; padding: 0.75rem; background: var(--bg-surface);
+    border-radius: var(--radius-sm); font-size: 0.85rem;
+    color: var(--text-secondary); font-family: 'Inter Tight', sans-serif;
+}
+
+.progress-display.achieved { background: var(--bg-surface); color: var(--text-primary); font-weight: 600; }
+
+.tracker-container { display: flex; flex-direction: column; gap: 1rem; }
+
+.progress-section {
+    background: var(--bg-card); border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg); padding: 1rem 1.5rem;
+}
+
+.progress-section .big-stat {
+    display: flex; align-items: baseline; justify-content: center;
+    gap: 0.5rem; margin-bottom: 0.5rem;
+}
+
+.progress-section .stat-value { font-size: 1.8rem; margin-bottom: 0; }
+.progress-section .stat-label { font-size: 0.8rem; }
+
+.progress-section h2, .input-section h2, .breakdown-section h2, .history-section h2 {
+    font-family: 'Inter Tight', sans-serif; font-size: 0.75rem;
+    color: var(--text-secondary); margin-bottom: 1rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1px;
+}
+
+.big-stat { text-align: center; margin-bottom: 0.75rem; }
+
+.stat-value {
+    font-family: 'Inter Tight', sans-serif; font-size: 2rem; font-weight: 700;
+    color: var(--text-primary); margin-bottom: 0.2rem; letter-spacing: -1.5px;
+}
+
+.stat-label { font-size: 0.8rem; color: var(--text-secondary); }
+
+.progress-bar {
+    height: 4px; background: var(--border-color); border-radius: 2px;
+    overflow: hidden; margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+    height: 100%; background: var(--primary-accent);
+    border-radius: 2px; transition: width 0.4s ease;
+}
+
+.progress-text { text-align: center; color: var(--text-secondary); font-weight: 500; font-size: 0.85rem; }
+
+.input-section, .breakdown-section {
+    background: var(--bg-card); border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg); padding: 1rem 1.5rem;
+}
+
+.breakdown-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; }
+
+.breakdown-card {
+    background: var(--bg-surface); border: 1px solid var(--border-light);
+    border-radius: var(--radius-md); padding: 1rem 1.25rem;
+    transition: border-color 0.2s ease;
+}
+
+.breakdown-card:hover { border-color: var(--text-tertiary); }
+
+.breakdown-card h3 {
+    font-family: 'Inter Tight', sans-serif; font-size: 0.8rem;
+    color: var(--text-primary); margin-bottom: 0.5rem; font-weight: 600;
+}
+
+.breakdown-card .stat-value { font-size: 1.4rem; letter-spacing: -1px; }
+.breakdown-card .stat-label { font-size: 0.7rem; }
+.breakdown-stat { text-align: center; margin-bottom: 0.5rem; }
+
+.breakdown-detail {
+    font-size: 0.75rem; color: var(--text-secondary);
+    margin-bottom: 0.25rem; display: flex; justify-content: space-between;
+}
+
+.mini-progress { height: 3px; background: var(--border-color); border-radius: 2px; overflow: hidden; margin-top: 0.75rem; }
+.mini-progress-fill { height: 100%; background: var(--primary-accent); transition: width 0.4s ease; }
+
+.history-section {
+    background: var(--bg-card); border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg); padding: 2rem;
+}
+
+.trade-list { display: flex; flex-direction: column; gap: 0; }
+
+.trade-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1rem 0; border-bottom: 1px solid var(--border-light);
+}
+
+.trade-item:last-child { border-bottom: none; }
+.trade-item-left { display: flex; flex-direction: column; gap: 0.2rem; }
+.trade-item-size { font-weight: 600; color: var(--text-primary); font-size: 0.9rem; }
+.trade-item-date { font-size: 0.8rem; color: var(--text-tertiary); }
+
+.trade-item-profit {
+    font-family: 'Inter Tight', sans-serif; font-size: 1rem;
+    font-weight: 700; color: var(--text-primary);
+}
+
+.empty-state { text-align: center; padding: 2.5rem; color: var(--text-tertiary); font-size: 0.9rem; }
+
+.reading-container { display: flex !important; flex-direction: column; gap: 2rem; }
+.books-grid { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 1.25rem !important; }
+
+.book-card {
+    background: var(--bg-card); border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg); padding: 2rem;
+    transition: border-color 0.2s ease; display: flex !important;
+    flex-direction: column; gap: 1.5rem; position: relative;
+    overflow: hidden; color: var(--text-primary);
+}
+
+.book-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 3px; pointer-events: none;
+}
+
+.book-card:hover { border-color: var(--text-tertiary); }
+.book-card-gradient-1::before { background: var(--primary-accent); }
+.book-card-gradient-2::before { background: var(--accent-pop); }
+.book-card-gradient-3::before { background: var(--text-secondary); }
+
+.book-header { display: flex; gap: 1rem; align-items: center; z-index: 1; }
+
+.book-icon {
+    font-family: 'Inter Tight', sans-serif; font-size: 1rem; font-weight: 700;
+    width: 40px; height: 40px; display: flex; align-items: center;
+    justify-content: center; background: var(--bg-surface);
+    border-radius: var(--radius-sm); flex-shrink: 0; color: var(--text-primary);
+}
+
+.book-info { flex: 1; }
+
+.book-card h3 {
+    font-family: 'Inter Tight', sans-serif; font-size: 1.1rem;
+    color: var(--text-primary); margin-bottom: 0.15rem;
+    font-weight: 700; letter-spacing: -0.5px;
+}
+
+.book-author { color: var(--text-secondary); font-size: 0.85rem; font-weight: 400; }
+.book-body { display: flex; flex-direction: column; gap: 1.25rem; z-index: 1; }
+.input-row { display: flex; gap: 0.75rem; align-items: flex-end; }
+.input-row .input-group { flex: 1; }
+
+.input-row .input-group label {
+    font-size: 0.75rem; font-weight: 500; color: var(--text-secondary);
+    margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.3px;
+}
+
+.input-row .input-group input {
+    background: var(--bg-surface); border: 1px solid var(--border-color);
+    color: var(--text-primary); padding: 0.6rem; border-radius: var(--radius-sm);
+    font-size: 0.9rem; font-family: 'Inter Tight', sans-serif; font-weight: 600;
+    text-align: center; transition: border-color 0.2s ease;
+    width: 100%; box-sizing: border-box;
+}
+
+.input-row .input-group input::placeholder { color: var(--text-tertiary); }
+.input-row .input-group input:focus { outline: none; border-color: var(--text-primary); }
+.divider { font-size: 1rem; color: var(--text-tertiary); font-weight: 300; margin-bottom: 0.4rem; }
+
+.btn-save {
+    background: var(--primary-accent); border: none; color: #FFFFFF;
+    padding: 0.7rem 1.25rem; border-radius: var(--radius-sm); font-size: 0.85rem;
+    font-family: 'DM Sans', sans-serif; font-weight: 600; cursor: pointer;
+    transition: opacity 0.2s ease; letter-spacing: -0.2px;
+}
+
+.btn-save:hover { opacity: 0.85; }
+.btn-save:active { opacity: 0.75; }
+
+.book-card .progress-display {
+    background: var(--bg-surface); color: var(--text-secondary); border: none;
+    border-radius: var(--radius-sm); padding: 0.75rem; font-size: 0.8rem;
+    font-weight: 500; text-align: center; font-family: 'Inter Tight', sans-serif;
+}
+
+.book-card .progress-display.achieved { background: var(--bg-surface); color: var(--text-primary); font-weight: 600; }
+
+@media (max-width: 768px) {
+    .app-container { flex-direction: column; }
+    .sidebar-nav {
+        width: 100%; border-right: none; border-bottom: 1px solid var(--border-color);
+        padding: 1.5rem; display: grid; grid-template-columns: auto 1fr;
+        gap: 2rem; align-items: center; flex-direction: row;
+    }
+    .sidebar-brand { grid-column: 1; }
+    .sidebar-menu { grid-column: 2; flex-direction: row; gap: 0.5rem; }
+    .pages-wrapper { padding: 2rem; }
+    .page-header h1 { font-size: 1.6rem; }
+    .goals-grid, .exercises-grid, .breakdown-grid { grid-template-columns: 1fr; }
+    .books-grid { grid-template-columns: 1fr !important; }
+}
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Left Sidebar Navigation -->
+        <aside class="sidebar-nav">
+            <div class="sidebar-brand">Smile</div>
+            <nav class="sidebar-menu">
+                <button class="sidebar-btn active" data-page="home">Home</button>
+                <button class="sidebar-btn" data-page="workout">Workout</button>
+                <button class="sidebar-btn" data-page="tracker">Tracker</button>
+                <button class="sidebar-btn" data-page="reading">Reading</button>
+            </nav>
+        </aside>
+
+        <!-- Pages Container -->
+        <div class="pages-wrapper">
+            <!-- HOME PAGE -->
+            <div id="home" class="page active">
+                <div class="page-header">
+                    <h1>Your Goals Overview</h1>
+                    <p>Track your progress toward what matters</p>
+                </div>
+
+                <div class="goals-grid">
+                    <!-- Workout Summary -->
+                    <div class="goal-card">
+                        <h3>Workout</h3>
+                        <div class="goal-header-row">
+                            <div class="goal-label-big">GOAL</div>
+                            <div class="goal-label-small">Current</div>
+                        </div>
+                        <div class="goal-items" id="home-workout-summary">
+                            <!-- Populated by JS -->
+                        </div>
+                        <button class="card-link-btn" onclick="goToPage('workout')">View Details</button>
+                    </div>
+
+                    <!-- Tracker Summary -->
+                    <div class="goal-card">
+                        <h3>Tracker</h3>
+                        <div id="home-trade-summary">
+                            <!-- Populated by JS -->
+                        </div>
+                        <button class="card-link-btn" onclick="goToPage('tracker')">View Details</button>
+                    </div>
+
+                    <!-- Reading Summary -->
+                    <div class="goal-card">
+                        <h3>Reading</h3>
+                        <div class="goal-items" id="home-reading-summary">
+                            <!-- Populated by JS -->
+                        </div>
+                        <button class="card-link-btn" onclick="goToPage('reading')">View Details</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WORKOUT PAGE -->
+            <div id="workout" class="page">
+                <div class="page-header">
+                    <h1>Workout Goals</h1>
+                    <p>Target weight: 70kg</p>
+                </div>
+
+                <div class="workout-container">
+                    <!-- Weight Goal -->
+                    <div class="workout-card">
+                        <div class="card-header">
+                            <h3>⚖️ Current Weight</h3>
+                            <span class="card-label">Target: 70kg</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="input-group">
+                                <label>Current Weight (kg)</label>
+                                <input type="number" id="weight-input" placeholder="Enter weight" step="0.1">
+                            </div>
+                            <div class="input-group">
+                                <label>Date Updated</label>
+                                <input type="date" id="weight-date" :value="today">
+                            </div>
+                            <button class="btn-primary" onclick="saveWorkoutData('weight')">Save</button>
+                            <div id="weight-display" class="progress-display"></div>
+                        </div>
+                    </div>
+
+                    <!-- Exercise Goals -->
+                    <div class="exercises-grid">
+                        <div class="workout-card">
+                            <h3>Weighted Pull Up</h3>
+                            <span class="exercise-goal">40kg × 8 reps</span>
+                            <div class="input-group">
+                                <label>Current (kg)</label>
+                                <input type="number" id="pullup-weight" placeholder="0" step="0.5">
+                            </div>
+                            <div class="input-group">
+                                <label>Reps</label>
+                                <input type="number" id="pullup-reps" placeholder="0">
+                            </div>
+                            <div class="input-group">
+                                <label>Date</label>
+                                <input type="date" id="pullup-date">
+                            </div>
+                            <button class="btn-primary" onclick="saveWorkoutData('pullup')">Save</button>
+                            <div id="pullup-display" class="progress-display"></div>
+                        </div>
+
+                        <div class="workout-card">
+                            <h3>Weighted Dips</h3>
+                            <span class="exercise-goal">40kg × 8 reps</span>
+                            <div class="input-group">
+                                <label>Current (kg)</label>
+                                <input type="number" id="dips-weight" placeholder="0" step="0.5">
+                            </div>
+                            <div class="input-group">
+                                <label>Reps</label>
+                                <input type="number" id="dips-reps" placeholder="0">
+                            </div>
+                            <div class="input-group">
+                                <label>Date</label>
+                                <input type="date" id="dips-date">
+                            </div>
+                            <button class="btn-primary" onclick="saveWorkoutData('dips')">Save</button>
+                            <div id="dips-display" class="progress-display"></div>
+                        </div>
+
+                        <div class="workout-card">
+                            <h3>Incline Bench Press</h3>
+                            <span class="exercise-goal">40kg × 8 reps</span>
+                            <div class="input-group">
+                                <label>Current (kg)</label>
+                                <input type="number" id="bench-weight" placeholder="0" step="0.5">
+                            </div>
+                            <div class="input-group">
+                                <label>Reps</label>
+                                <input type="number" id="bench-reps" placeholder="0">
+                            </div>
+                            <div class="input-group">
+                                <label>Date</label>
+                                <input type="date" id="bench-date">
+                            </div>
+                            <button class="btn-primary" onclick="saveWorkoutData('bench')">Save</button>
+                            <div id="bench-display" class="progress-display"></div>
+                        </div>
+
+                        <div class="workout-card">
+                            <h3>Lat Pulldown</h3>
+                            <span class="exercise-goal">100kg × 8 reps</span>
+                            <div class="input-group">
+                                <label>Current (kg)</label>
+                                <input type="number" id="lat-weight" placeholder="0" step="0.5">
+                            </div>
+                            <div class="input-group">
+                                <label>Reps</label>
+                                <input type="number" id="lat-reps" placeholder="0">
+                            </div>
+                            <div class="input-group">
+                                <label>Date</label>
+                                <input type="date" id="lat-date">
+                            </div>
+                            <button class="btn-primary" onclick="saveWorkoutData('lat')">Save</button>
+                            <div id="lat-display" class="progress-display"></div>
+                        </div>
+
+                        <div class="workout-card">
+                            <h3>Squat</h3>
+                            <span class="exercise-goal">80kg × 8 reps</span>
+                            <div class="input-group">
+                                <label>Current (kg)</label>
+                                <input type="number" id="squat-weight" placeholder="0" step="0.5">
+                            </div>
+                            <div class="input-group">
+                                <label>Reps</label>
+                                <input type="number" id="squat-reps" placeholder="0">
+                            </div>
+                            <div class="input-group">
+                                <label>Date</label>
+                                <input type="date" id="squat-date">
+                            </div>
+                            <button class="btn-primary" onclick="saveWorkoutData('squat')">Save</button>
+                            <div id="squat-display" class="progress-display"></div>
+                        </div>
+
+                        <div class="workout-card">
+                            <h3>Half Marathon</h3>
+                            <span class="exercise-goal">August 31, 2026</span>
+                            <div class="input-group">
+                                <label>Miles Completed</label>
+                                <input type="number" id="marathon-distance" placeholder="0" step="0.1">
+                            </div>
+                            <div class="input-group">
+                                <label>Last Run Date</label>
+                                <input type="date" id="marathon-date">
+                            </div>
+                            <button class="btn-primary" onclick="saveWorkoutData('marathon')">Save</button>
+                            <div id="marathon-display" class="progress-display"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TRADE TRACKER PAGE -->
+            <div id="tracker" class="page">
+                <div class="page-header">
+                    <h1>Trade Tracker</h1>
+                    <p>Goal: $30,000</p>
+                </div>
+
+                <div class="tracker-container">
+                    <!-- Overall Progress -->
+                    <div class="progress-section">
+                        <h2>Overall Progress</h2>
+                        <div class="big-stat">
+                            <div class="stat-value" id="total-earned">$0</div>
+                            <div class="stat-label">of $30,000</div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="overall-progress" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-text" id="progress-percentage">0% complete</div>
+                    </div>
+
+                    <!-- Trade Input Section -->
+                    <div class="input-section">
+                        <h2>Log a Trade</h2>
+                        <div class="input-group-inline">
+                            <div class="input-group">
+                                <label>Trade Size</label>
+                                <select id="trade-size">
+                                    <option value="50">$50 Trades</option>
+                                    <option value="100">$100 Trades</option>
+                                    <option value="500">$500 Trades</option>
+                                    <option value="1000">$1000 Trades</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Profit ($)</label>
+                                <input type="number" id="trade-profit" placeholder="0" step="0.01">
+                            </div>
+                            <button class="btn-primary" onclick="addTrade()">Log Trade</button>
+                        </div>
+                    </div>
+
+                    <!-- Trade Breakdown -->
+                    <div class="breakdown-section">
+                        <h2>Breakdown by Trade Size</h2>
+                        <div class="breakdown-grid">
+                            <div class="breakdown-card">
+                                <h3>50 Trades</h3>
+                                <div class="breakdown-stat">
+                                    <div class="stat-value" id="earned-50">0</div>
+                                    <div class="stat-label">Earned</div>
+                                </div>
+                                <div class="breakdown-detail">Trades: <span id="count-50">0</span></div>
+                                <div class="breakdown-detail">Needed: <span id="needed-50">600</span></div>
+                                <div class="mini-progress">
+                                    <div class="mini-progress-fill" id="progress-50" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <div class="breakdown-card">
+                                <h3>100 Trades</h3>
+                                <div class="breakdown-stat">
+                                    <div class="stat-value" id="earned-100">0</div>
+                                    <div class="stat-label">Earned</div>
+                                </div>
+                                <div class="breakdown-detail">Trades: <span id="count-100">0</span></div>
+                                <div class="breakdown-detail">Needed: <span id="needed-100">300</span></div>
+                                <div class="mini-progress">
+                                    <div class="mini-progress-fill" id="progress-100" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <div class="breakdown-card">
+                                <h3>500 Trades</h3>
+                                <div class="breakdown-stat">
+                                    <div class="stat-value" id="earned-500">0</div>
+                                    <div class="stat-label">Earned</div>
+                                </div>
+                                <div class="breakdown-detail">Trades: <span id="count-500">0</span></div>
+                                <div class="breakdown-detail">Needed: <span id="needed-500">60</span></div>
+                                <div class="mini-progress">
+                                    <div class="mini-progress-fill" id="progress-500" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <div class="breakdown-card">
+                                <h3>1000 Trades</h3>
+                                <div class="breakdown-stat">
+                                    <div class="stat-value" id="earned-1000">0</div>
+                                    <div class="stat-label">Earned</div>
+                                </div>
+                                <div class="breakdown-detail">Trades: <span id="count-1000">0</span></div>
+                                <div class="breakdown-detail">Needed: <span id="needed-1000">30</span></div>
+                                <div class="mini-progress">
+                                    <div class="mini-progress-fill" id="progress-1000" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trade History (hidden for compact view) -->
+                    <div class="history-section" style="display: none;">
+                        <h2>Recent Trades</h2>
+                        <div id="trade-history" class="trade-list">
+                            <p class="empty-state">No trades logged yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- READING PAGE -->
+            <div id="reading" class="page">
+                <div class="page-header">
+                    <h1>Reading</h1>
+                    <p>Track your literary journey</p>
+                </div>
+
+                <div class="reading-container">
+                    <!-- Books Grid -->
+                    <div class="books-grid">
+                        <!-- Principles by Ray Dalio -->
+                        <div class="book-card book-card-gradient-1">
+                            <div class="book-header">
+                                <div class="book-icon">P</div>
+                                <div class="book-info">
+                                    <h3>Principles</h3>
+                                    <p class="book-author">Ray Dalio</p>
+                                </div>
+                            </div>
+                            <div class="book-body">
+                                <div class="input-row">
+                                    <div class="input-group">
+                                        <label>Current Page</label>
+                                        <input type="number" id="principles-page" placeholder="0">
+                                    </div>
+                                    <div class="divider">/</div>
+                                    <div class="input-group">
+                                        <label>Total</label>
+                                        <input type="number" id="principles-total" placeholder="0">
+                                    </div>
+                                </div>
+                                <button class="btn-save" onclick="saveReading('principles')">Update Progress</button>
+                                <div id="principles-display" class="progress-display"></div>
+                            </div>
+                        </div>
+
+                        <!-- Atomic Habits -->
+                        <div class="book-card book-card-gradient-2">
+                            <div class="book-header">
+                                <div class="book-icon">A</div>
+                                <div class="book-info">
+                                    <h3>Atomic Habits</h3>
+                                    <p class="book-author">James Clear</p>
+                                </div>
+                            </div>
+                            <div class="book-body">
+                                <div class="input-row">
+                                    <div class="input-group">
+                                        <label>Current Page</label>
+                                        <input type="number" id="habits-page" placeholder="0">
+                                    </div>
+                                    <div class="divider">/</div>
+                                    <div class="input-group">
+                                        <label>Total</label>
+                                        <input type="number" id="habits-total" placeholder="0">
+                                    </div>
+                                </div>
+                                <button class="btn-save" onclick="saveReading('habits')">Update Progress</button>
+                                <div id="habits-display" class="progress-display"></div>
+                            </div>
+                        </div>
+
+                        <!-- Power Audiobook -->
+                        <div class="book-card book-card-gradient-3">
+                            <div class="book-header">
+                                <div class="book-icon">Pw</div>
+                                <div class="book-info">
+                                    <h3>Power</h3>
+                                    <p class="book-author">Audiobook</p>
+                                </div>
+                            </div>
+                            <div class="book-body">
+                                <div class="input-row">
+                                    <div class="input-group">
+                                        <label>Current Chapter</label>
+                                        <input type="number" id="power-chapter" placeholder="0">
+                                    </div>
+                                    <div class="divider">/</div>
+                                    <div class="input-group">
+                                        <label>Total</label>
+                                        <input type="number" id="power-total" placeholder="0">
+                                    </div>
+                                </div>
+                                <button class="btn-save" onclick="saveReading('power')">Update Progress</button>
+                                <div id="power-display" class="progress-display"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+// Initialize app
+document.addEventListener('DOMContentLoaded', init);
+
+document.querySelectorAll('.sidebar-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => { goToPage(e.target.dataset.page); });
+});
+
+const today = new Date().toISOString().split('T')[0];
+
+function init() {
+    loadAllData();
+    updateHomePageSummary();
+    displayWorkoutProgress();
+    displayTradeProgress();
+    displayReadingProgress();
+    setDefaultDates();
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+}
+
+function setDefaultDates() {
+    document.querySelectorAll('input[type="date"]').forEach(input => {
+        if (!input.value) input.value = today;
+    });
+}
+
+function goToPage(pageName) {
+    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+    document.getElementById(pageName).classList.add('active');
+    document.querySelectorAll('.sidebar-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`.sidebar-btn[data-page="${pageName}"]`).classList.add('active');
+    if (pageName === 'home') updateHomePageSummary();
+    else if (pageName === 'workout') displayWorkoutProgress();
+    else if (pageName === 'tracker') displayTradeProgress();
+    else if (pageName === 'reading') displayReadingProgress();
+}
+
+const workoutGoals = {
+    weight: { goal: 70, unit: 'kg' },
+    pullup: { weight: 40, reps: 8, unit: 'kg' },
+    dips: { weight: 40, reps: 8, unit: 'kg' },
+    bench: { weight: 40, reps: 8, unit: 'kg' },
+    lat: { weight: 100, reps: 8, unit: 'kg' },
+    squat: { weight: 80, reps: 8, unit: 'kg' },
+    marathon: { goal: 13.1, unit: 'miles', goalDate: '2026-08-31' }
+};
+
+function saveWorkoutData(exercise) {
+    const data = {};
+    if (exercise === 'weight') {
+        data.value = document.getElementById('weight-input').value;
+        data.date = document.getElementById('weight-date').value;
+    } else if (exercise === 'marathon') {
+        data.distance = document.getElementById('marathon-distance').value;
+        data.date = document.getElementById('marathon-date').value;
+    } else {
+        data.weight = document.getElementById(`${exercise}-weight`).value;
+        data.reps = document.getElementById(`${exercise}-reps`).value;
+        data.date = document.getElementById(`${exercise}-date`).value;
+    }
+    if (Object.values(data).some(v => v === '')) { alert('Please fill in all fields'); return; }
+    let workout = JSON.parse(localStorage.getItem('workout')) || {};
+    workout[exercise] = data;
+    localStorage.setItem('workout', JSON.stringify(workout));
+    displayWorkoutProgress();
+    alert('Workout data saved!');
+}
+
+function displayWorkoutProgress() {
+    const workout = JSON.parse(localStorage.getItem('workout')) || {};
+    if (workout.weight) {
+        const weight = parseFloat(workout.weight.value);
+        const goal = workoutGoals.weight.goal;
+        const diff = (goal - weight).toFixed(1);
+        const status = weight <= goal ? '✓ Goal achieved!' : `${diff}kg away`;
+        document.getElementById('weight-display').textContent = `${weight}kg (${status}) - Last: ${formatDate(workout.weight.date)}`;
+        document.getElementById('weight-display').className = weight <= goal ? 'progress-display achieved' : 'progress-display';
+    }
+    ['pullup', 'dips', 'bench', 'lat', 'squat'].forEach(exercise => {
+        if (workout[exercise]) {
+            const w = parseFloat(workout[exercise].weight);
+            const r = parseInt(workout[exercise].reps);
+            const goal = workoutGoals[exercise];
+            const status = (w >= goal.weight && r >= goal.reps) ? '✓ Goal achieved!' : 'In progress';
+            document.getElementById(`${exercise}-display`).textContent = `${w}kg × ${r} reps (${status}) - Last: ${formatDate(workout[exercise].date)}`;
+            document.getElementById(`${exercise}-display`).className = (w >= goal.weight && r >= goal.reps) ? 'progress-display achieved' : 'progress-display';
+        }
+    });
+    if (workout.marathon) {
+        const distance = parseFloat(workout.marathon.distance);
+        const goal = workoutGoals.marathon.goal;
+        const daysLeft = calculateDaysLeft('2026-08-31');
+        const status = distance >= goal ? '✓ Goal achieved!' : `${(goal - distance).toFixed(1)} miles away`;
+        document.getElementById('marathon-display').textContent = `${distance} miles (${status}) - ${daysLeft} days until deadline`;
+        document.getElementById('marathon-display').className = distance >= goal ? 'progress-display achieved' : 'progress-display';
+    }
+}
+
+function calculateDaysLeft(goalDate) {
+    return Math.ceil((new Date(goalDate) - new Date()) / (1000 * 60 * 60 * 24));
+}
+
+function saveReading(book) {
+    let data = {};
+    if (book === 'principles') { data.page = document.getElementById('principles-page').value; data.total = document.getElementById('principles-total').value; }
+    else if (book === 'habits') { data.page = document.getElementById('habits-page').value; data.total = document.getElementById('habits-total').value; }
+    else if (book === 'power') { data.chapter = document.getElementById('power-chapter').value; data.total = document.getElementById('power-total').value; }
+    if (Object.values(data).some(v => v === '')) { alert('Please fill in all fields'); return; }
+    let reading = JSON.parse(localStorage.getItem('reading')) || {};
+    reading[book] = data;
+    localStorage.setItem('reading', JSON.stringify(reading));
+    displayReadingProgress();
+    alert('Reading progress saved!');
+}
+
+function displayReadingProgress() {
+    const reading = JSON.parse(localStorage.getItem('reading')) || {};
+    const books = [
+        { id: 'principles', pageId: 'principles-page', totalId: 'principles-total', displayId: 'principles-display', type: 'pages' },
+        { id: 'habits', pageId: 'habits-page', totalId: 'habits-total', displayId: 'habits-display', type: 'pages' },
+        { id: 'power', pageId: 'power-chapter', totalId: 'power-total', displayId: 'power-display', type: 'chapters' }
+    ];
+    books.forEach(book => {
+        const bookData = reading[book.id];
+        if (bookData) {
+            const pageInput = document.getElementById(book.pageId);
+            const totalInput = document.getElementById(book.totalId);
+            if (book.type === 'pages') { if (pageInput) pageInput.value = bookData.page || ''; }
+            else { if (pageInput) pageInput.value = bookData.chapter || ''; }
+            if (totalInput) totalInput.value = bookData.total || '';
+            const current = parseInt(bookData.page || bookData.chapter);
+            const total = parseInt(bookData.total);
+            const unit = book.type === 'pages' ? 'pages' : 'chapters';
+            if (total > 0) {
+                const percent = ((current / total) * 100).toFixed(1);
+                document.getElementById(book.displayId).textContent = `${current} / ${total} ${unit} (${percent}% complete)`;
+            } else { document.getElementById(book.displayId).textContent = 'Add total to see progress'; }
+        } else { document.getElementById(book.displayId).textContent = 'Start tracking your progress'; }
+    });
+}
+
+function addTrade() {
+    const size = parseInt(document.getElementById('trade-size').value);
+    const profit = parseFloat(document.getElementById('trade-profit').value);
+    if (!profit || profit <= 0) { alert('Please enter a valid profit amount'); return; }
+    let trades = JSON.parse(localStorage.getItem('trades')) || [];
+    trades.push({ size, profit, date: today, id: Date.now() });
+    localStorage.setItem('trades', JSON.stringify(trades));
+    document.getElementById('trade-profit').value = '';
+    displayTradeProgress();
+    alert('Trade logged!');
+}
+
+function displayTradeProgress() {
+    const trades = JSON.parse(localStorage.getItem('trades')) || [];
+    const goal = 30000;
+    const bySize = { 50: { earned: 0, count: 0 }, 100: { earned: 0, count: 0 }, 500: { earned: 0, count: 0 }, 1000: { earned: 0, count: 0 } };
+    let totalEarned = 0;
+    trades.forEach(trade => { bySize[trade.size].earned += trade.profit; bySize[trade.size].count += 1; totalEarned += trade.profit; });
+    document.getElementById('total-earned').textContent = Math.round(totalEarned);
+    const progressPercent = (totalEarned / goal) * 100;
+    document.getElementById('overall-progress').style.width = Math.min(progressPercent, 100) + '%';
+    document.getElementById('progress-percentage').textContent = `${progressPercent.toFixed(1)}% complete`;
+    [50, 100, 500, 1000].forEach(size => {
+        document.getElementById(`earned-${size}`).textContent = Math.round(bySize[size].earned);
+        document.getElementById(`count-${size}`).textContent = bySize[size].count;
+        document.getElementById(`needed-${size}`).textContent = Math.ceil((goal - totalEarned) / size);
+        document.getElementById(`progress-${size}`).style.width = Math.min((bySize[size].earned / goal) * 100, 100) + '%';
+    });
+    displayTradeHistory(trades);
+}
+
+function displayTradeHistory(trades) {
+    const historyDiv = document.getElementById('trade-history');
+    if (trades.length === 0) { historyDiv.innerHTML = '<p class="empty-state">No trades logged yet</p>'; return; }
+    const sortedTrades = [...trades].sort((a, b) => b.date.localeCompare(a.date));
+    historyDiv.innerHTML = sortedTrades.map(trade => `
+        <div class="trade-item"><div class="trade-item-left"><div class="trade-item-size">${trade.size} Trade</div><div class="trade-item-date">${formatDate(trade.date)}</div></div><div class="trade-item-profit">+${Math.round(trade.profit)}</div></div>
+    `).join('');
+}
+
+function updateHomePageSummary() { updateWorkoutSummary(); updateTrackerSummary(); updateReadingSummary(); }
+
+function updateReadingSummary() {
+    const reading = JSON.parse(localStorage.getItem('reading')) || {};
+    const summaryDiv = document.getElementById('home-reading-summary');
+    const books = [
+        { id: 'principles', name: 'Principles', type: 'pages' },
+        { id: 'habits', name: 'Atomic Habits', type: 'pages' },
+        { id: 'power', name: 'Power', type: 'chapters' }
+    ];
+    let html = '';
+    books.forEach(book => {
+        const data = reading[book.id];
+        let currentVal = '—', totalVal = '—', pct = 0;
+        if (data) {
+            const current = parseInt(book.type === 'pages' ? (data.page || 0) : (data.chapter || 0));
+            const total = parseInt(data.total || 0);
+            const unit = book.type === 'pages' ? 'p' : 'ch';
+            currentVal = `${current}${unit}`;
+            totalVal = total > 0 ? `${total}${unit}` : '—';
+            if (total > 0) pct = Math.min(Math.round((current / total) * 100), 100);
+        }
+        html += `<div class="goal-item"><span class="goal-item-name">${book.name}</span><span class="goal-item-current">${currentVal}</span><span class="goal-item-goal">${totalVal}</span><span class="goal-item-pct">${pct > 0 ? pct + '%' : '—'}</span></div>`;
+    });
+    summaryDiv.innerHTML = html || '<p class="empty-state">No books tracked yet</p>';
+}
+
+function calculateCountdown(targetDate) {
+    const days = Math.ceil((new Date(targetDate) - new Date()) / (1000 * 60 * 60 * 24));
+    return days > 0 ? days : 0;
+}
+
+function updateWorkoutSummary() {
+    const workout = JSON.parse(localStorage.getItem('workout')) || {};
+    const summaryDiv = document.getElementById('home-workout-summary');
+    const daysLeft = calculateCountdown('2026-09-01');
+    let summaryHTML = `<div class="goal-item goal-header"><span class="goal-item-name"></span><span class="goal-item-current">Current</span><span class="goal-item-goal">Goal</span><span class="goal-item-pct"></span></div>`;
+    if (workout.weight) {
+        const weight = parseFloat(workout.weight.value), goal = workoutGoals.weight.goal;
+        const pct = goal > 0 ? Math.min(Math.round((1 - Math.abs(weight - goal) / goal) * 100), 100) : 0;
+        summaryHTML += `<div class="goal-item"><span class="goal-item-name">Weight</span><span class="goal-item-current">${weight}kg</span><span class="goal-item-goal">${goal}kg</span><span class="goal-item-pct">${Math.max(pct, 0)}%</span></div>`;
+    }
+    ['pullup', 'dips', 'bench', 'lat', 'squat'].forEach(exercise => {
+        if (workout[exercise]) {
+            const w = parseFloat(workout[exercise].weight), r = parseInt(workout[exercise].reps), goal = workoutGoals[exercise];
+            const name = exercise.charAt(0).toUpperCase() + exercise.slice(1);
+            const pct = Math.min(Math.round(((w / goal.weight * 100) + (r / goal.reps * 100)) / 2), 100);
+            summaryHTML += `<div class="goal-item"><span class="goal-item-name">${name}</span><span class="goal-item-current">${w}kg, ${r} Reps</span><span class="goal-item-goal">${goal.weight}kg, ${goal.reps} Reps</span><span class="goal-item-pct">${pct}%</span></div>`;
+        }
+    });
+    if (workout.marathon) {
+        const distance = parseFloat(workout.marathon.distance);
+        const pct = Math.min(Math.round((distance / 13.1) * 100), 100);
+        summaryHTML += `<div class="goal-item"><span class="goal-item-name">Half Marathon</span><span class="goal-item-current">${distance}mi</span><span class="goal-item-goal">13.1mi</span><span class="goal-item-pct">${pct}%</span></div>`;
+    }
+    summaryHTML += `<div class="countdown-section"><div class="countdown-text">September 1st • ${daysLeft} days left</div></div>`;
+    summaryDiv.innerHTML = summaryHTML;
+}
+
+function updateTrackerSummary() {
+    const trades = JSON.parse(localStorage.getItem('trades')) || [];
+    const summaryDiv = document.getElementById('home-trade-summary');
+    const daysLeft = calculateCountdown('2026-12-31');
+    let totalEarned = 0;
+    trades.forEach(trade => { totalEarned += trade.profit; });
+    const goal = 30000, progressPercent = ((totalEarned / goal) * 100).toFixed(1);
+    summaryDiv.innerHTML = `
+        <div class="goal-item goal-header"><span class="goal-item-name"></span><span class="goal-item-current">Current</span><span class="goal-item-goal">Goal</span><span class="goal-item-pct"></span></div>
+        <div class="goal-item"><span class="goal-item-name">Earnings</span><span class="goal-item-current">$${Math.round(totalEarned).toLocaleString()}</span><span class="goal-item-goal">$30,000</span><span class="goal-item-pct">${progressPercent}%</span></div>
+        <div class="progress-bar" style="margin-top:0.75rem;margin-bottom:0.5rem"><div class="progress-fill" style="width:${Math.min(progressPercent, 100)}%"></div></div>
+        <div class="countdown-section"><div class="countdown-text">End of Year • ${daysLeft} days left</div></div>`;
+}
+
+function formatDate(dateString) { return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
+function loadAllData() {}
+
+window.addEventListener('load', () => {
+    document.querySelectorAll('input[type="date"]:not([value])').forEach(input => { input.value = today; });
+});
+    </script>
+</body>
+</html>
