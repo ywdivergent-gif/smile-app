@@ -176,8 +176,8 @@ body {
 
 .goal-item {
     display: grid;
-    grid-template-columns: 1fr auto auto auto;
-    gap: 0.75rem;
+    grid-template-columns: 1.2fr 1fr 1fr auto;
+    gap: 0.5rem;
     align-items: center;
     padding: 0.5rem 0;
     border-bottom: 1px solid var(--border-light);
@@ -188,32 +188,46 @@ body {
 .goal-item-name { color: var(--text-primary); font-weight: 500; font-size: 0.9rem; }
 
 .goal-item-current {
-    text-align: right; font-weight: 500; color: var(--text-secondary);
-    min-width: 70px; font-size: 0.85rem; font-family: 'Inter Tight', sans-serif;
+    text-align: center; font-weight: 500; color: var(--text-secondary);
+    font-size: 0.85rem; font-family: 'Inter Tight', sans-serif;
+    background: var(--bg-surface); border-radius: var(--radius-sm);
+    padding: 0.25rem 0.5rem;
 }
 
 .goal-item-goal {
-    text-align: right; font-weight: 700; color: var(--text-primary);
-    min-width: 70px; font-size: 0.95rem; font-family: 'Inter Tight', sans-serif;
+    text-align: center; font-weight: 700; color: var(--primary-accent);
+    font-size: 0.85rem; font-family: 'Inter Tight', sans-serif;
+    background: rgba(45, 90, 61, 0.08); border-radius: var(--radius-sm);
+    padding: 0.25rem 0.5rem;
 }
 
 .goal-item-pct {
     text-align: right; font-weight: 700; color: var(--accent-pop);
-    min-width: 40px; font-size: 0.85rem; font-family: 'Inter Tight', sans-serif;
+    min-width: 36px; font-size: 0.85rem; font-family: 'Inter Tight', sans-serif;
 }
 
 .goal-header-row { display: none; }
 
 .goal-item.goal-header {
     background: transparent; border: none;
-    border-bottom: 1px solid var(--border-color);
-    padding: 0 0 0.5rem 0; margin-bottom: 0;
+    border-bottom: 2px solid var(--border-color);
+    padding: 0 0 0.5rem 0; margin-bottom: 0.25rem;
 }
 
-.goal-item.goal-header .goal-item-name,
+.goal-item.goal-header .goal-item-name { font-size: 0; }
+
 .goal-item.goal-header .goal-item-current,
 .goal-item.goal-header .goal-item-goal {
-    font-size: 0.75rem; font-weight: 600; color: var(--text-tertiary);
+    font-size: 0.7rem; font-weight: 700; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    background: none; padding: 0;
+}
+
+.goal-item.goal-header .goal-item-current { color: var(--text-tertiary); }
+.goal-item.goal-header .goal-item-goal { color: var(--primary-accent); }
+
+.goal-item.goal-header .goal-item-pct {
+    font-size: 0.7rem; font-weight: 700; color: var(--text-tertiary);
     text-transform: uppercase; letter-spacing: 0.5px;
 }
 
@@ -349,6 +363,14 @@ body {
 }
 
 .progress-text { text-align: center; color: var(--text-secondary); font-weight: 500; font-size: 0.85rem; }
+
+.btn-edit-trades {
+    display: block; margin: 0.75rem auto 0; background: none; border: 1px solid var(--border-color);
+    color: var(--text-tertiary); font-size: 0.7rem; font-weight: 500; padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-sm); cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+}
+.btn-edit-trades:hover { color: var(--text-primary); border-color: var(--text-secondary); }
 
 .input-section, .breakdown-section {
     background: var(--bg-card); border: 1px solid var(--border-color);
@@ -771,6 +793,7 @@ body {
                                 <div class="progress-fill" id="overall-progress" style="width: 0%"></div>
                             </div>
                             <div class="progress-text" id="progress-percentage">0% complete</div>
+                            <button class="btn-edit-trades" onclick="editTrades()">Edit Total</button>
                         </div>
 
                         <div class="input-section">
@@ -1210,6 +1233,28 @@ function displayReadingProgress() {
 }
 
 // ====== TRADES ======
+function editTrades() {
+    const trades = getData('trades') || [];
+    let totalEarned = 0;
+    trades.forEach(t => totalEarned += t.profit);
+    const newTotal = prompt(`Current total: $${Math.round(totalEarned)}\n\nEnter new total (or 0 to reset):`, Math.round(totalEarned));
+    if (newTotal === null) return;
+    const target = parseFloat(newTotal);
+    if (isNaN(target)) { alert('Please enter a valid number'); return; }
+    if (target === 0) {
+        if (confirm('Reset all trades to $0? This cannot be undone.')) {
+            setData('trades', []);
+            displayTradeProgress();
+        }
+    } else {
+        const diff = target - totalEarned;
+        let updatedTrades = getData('trades') || [];
+        updatedTrades.push({ size: 50, profit: diff, date: today, id: Date.now(), note: 'Manual adjustment' });
+        setData('trades', updatedTrades);
+        displayTradeProgress();
+    }
+}
+
 function addTrade() {
     const size = parseInt(document.getElementById('trade-size').value);
     const profit = parseFloat(document.getElementById('trade-profit').value);
@@ -1287,7 +1332,7 @@ function updateWorkoutSummary() {
     const workout = getData('workout') || {};
     const summaryDiv = document.getElementById('home-workout-summary');
     const daysLeft = calculateCountdown('2026-09-01');
-    let summaryHTML = `<div class="goal-item goal-header"><span class="goal-item-name"></span><span class="goal-item-current">Current</span><span class="goal-item-goal">Goal</span><span class="goal-item-pct"></span></div>`;
+    let summaryHTML = `<div class="goal-item goal-header"><span class="goal-item-name"></span><span class="goal-item-current">Current</span><span class="goal-item-goal">Goal</span><span class="goal-item-pct">%</span></div>`;
     if (workout.weight) {
         const weight = parseFloat(workout.weight.value), goal = workoutGoals.weight.goal;
         const pct = goal > 0 ? Math.min(Math.round((1 - Math.abs(weight - goal) / goal) * 100), 100) : 0;
