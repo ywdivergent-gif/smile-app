@@ -561,6 +561,15 @@ body {
 .auth-section:hover .sign-out-btn { opacity: 1; }
 .sign-out-btn:hover { color: var(--accent-pop); }
 
+.refresh-btn {
+    background: none; border: none; color: var(--text-tertiary);
+    font-size: 1.1rem; cursor: pointer; padding: 0.1rem 0.3rem;
+    border-radius: var(--radius-sm); transition: all 0.2s; vertical-align: middle;
+    margin-left: 0.25rem;
+}
+.refresh-btn:hover { color: var(--primary-accent); }
+.refresh-btn:active { transform: rotate(180deg); }
+
 .sync-badge { display: none; }
 .sync-dot {
     width: 5px; height: 5px; background: var(--primary-accent);
@@ -572,7 +581,7 @@ body {
     <div class="app-container">
         <!-- Left Sidebar Navigation -->
         <aside class="sidebar-nav">
-            <div class="sidebar-brand">Smile</div>
+            <div class="sidebar-brand">Smile <button class="refresh-btn" onclick="location.reload()" title="Refresh">↻</button></div>
             <nav class="sidebar-menu">
                 <button class="sidebar-btn active" data-page="home">Home</button>
                 <button class="sidebar-btn" data-page="workout">Workout</button>
