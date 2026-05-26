@@ -766,9 +766,9 @@ body {
 
                         <div class="workout-card">
                             <h3>Half Marathon</h3>
-                            <span class="exercise-goal">August 31, 2026</span>
+                            <span class="exercise-goal">21km — August 31, 2026</span>
                             <div class="input-group">
-                                <label>Miles Completed</label>
+                                <label>Longest Run (km)</label>
                                 <input type="number" id="marathon-distance" placeholder="0" step="0.1">
                             </div>
                             <div class="input-group">
@@ -1143,7 +1143,7 @@ const workoutGoals = {
     bench: { weight: 40, reps: 8, unit: 'kg' },
     lat: { weight: 100, reps: 8, unit: 'kg' },
     squat: { weight: 80, reps: 8, unit: 'kg' },
-    marathon: { goal: 13.1, unit: 'miles', goalDate: '2026-08-31' }
+    marathon: { goal: 21, unit: 'km', goalDate: '2026-08-31' }
 };
 
 function saveWorkoutData(exercise) {
@@ -1191,8 +1191,8 @@ function displayWorkoutProgress() {
         const distance = parseFloat(workout.marathon.distance);
         const goal = workoutGoals.marathon.goal;
         const daysLeft = calculateDaysLeft('2026-08-31');
-        const status = distance >= goal ? '✓ Goal achieved!' : `${(goal - distance).toFixed(1)} miles away`;
-        document.getElementById('marathon-display').textContent = `${distance} miles (${status}) - ${daysLeft} days until deadline`;
+        const status = distance >= goal ? '✓ Goal achieved!' : `${(goal - distance).toFixed(1)}km away`;
+        document.getElementById('marathon-display').textContent = `${distance}km (${status}) - ${daysLeft} days until deadline`;
         document.getElementById('marathon-display').className = distance >= goal ? 'progress-display achieved' : 'progress-display';
     }
 }
@@ -1357,8 +1357,8 @@ function updateWorkoutSummary() {
     });
     if (workout.marathon) {
         const distance = parseFloat(workout.marathon.distance);
-        const pct = Math.min(Math.round((distance / 13.1) * 100), 100);
-        summaryHTML += `<div class="goal-item"><span class="goal-item-name">Half Marathon</span><span class="goal-item-current">${distance}mi</span><span class="goal-item-goal">13.1mi</span><span class="goal-item-pct">${pct}%</span></div>`;
+        const pct = Math.min(Math.round((distance / 21) * 100), 100);
+        summaryHTML += `<div class="goal-item"><span class="goal-item-name">Half Marathon</span><span class="goal-item-current">${distance}km</span><span class="goal-item-goal">21km</span><span class="goal-item-pct">${pct}%</span></div>`;
     }
     summaryHTML += `<div class="countdown-section"><div class="countdown-text">September 1st • ${daysLeft} days left</div></div>`;
     summaryDiv.innerHTML = summaryHTML;
