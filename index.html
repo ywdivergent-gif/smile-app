@@ -575,6 +575,74 @@ body {
     width: 5px; height: 5px; background: var(--primary-accent);
     border-radius: 50%; display: inline-block;
 }
+
+.add-exercise-section { border: 2px dashed var(--border-color); background: var(--bg-surface); }
+.add-exercise-section:hover { border-color: var(--primary-accent); }
+
+.exercise-preview-details {
+    background: var(--bg-main); border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm); padding: 1rem; margin-top: 0.5rem;
+}
+
+.exercise-detail-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.35rem 0; border-bottom: 1px solid var(--border-light);
+    font-size: 0.85rem;
+}
+.exercise-detail-row:last-child { border-bottom: none; }
+.exercise-detail-label { color: var(--text-secondary); font-weight: 500; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.3px; }
+.exercise-detail-value { color: var(--text-primary); font-weight: 600; font-family: 'Inter Tight', sans-serif; }
+
+.custom-exercise-card {
+    background: var(--bg-card); border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg); padding: 1.75rem;
+    transition: border-color 0.2s ease; position: relative;
+}
+.custom-exercise-card:hover { border-color: var(--text-tertiary); }
+
+.custom-card-top { display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem; }
+
+.exercise-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.exercise-tag {
+    display: inline-flex; align-items: center; gap: 0.25rem;
+    background: var(--bg-surface); color: var(--text-secondary);
+    padding: 0.25rem 0.6rem; border-radius: var(--radius-sm);
+    font-size: 0.7rem; font-weight: 600; font-family: 'Inter Tight', sans-serif;
+    letter-spacing: 0.2px; border: 1px solid var(--border-light);
+}
+.exercise-tag.muscle { background: rgba(45, 90, 61, 0.08); color: var(--primary-accent); border-color: rgba(45, 90, 61, 0.15); }
+.exercise-tag.equipment { background: rgba(224, 122, 58, 0.08); color: var(--accent-pop); border-color: rgba(224, 122, 58, 0.15); }
+
+.exercise-notes {
+    background: var(--bg-surface); border-left: 3px solid var(--primary-accent);
+    padding: 0.5rem 0.75rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem;
+    font-style: italic;
+}
+
+.exercise-specs {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1rem;
+}
+.spec-item {
+    text-align: center; background: var(--bg-surface); border-radius: var(--radius-sm);
+    padding: 0.5rem 0.25rem; border: 1px solid var(--border-light);
+}
+.spec-label { font-size: 0.65rem; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.3px; font-weight: 600; }
+.spec-value { font-size: 0.95rem; color: var(--text-primary); font-weight: 700; font-family: 'Inter Tight', sans-serif; }
+
+.btn-remove {
+    background: none; border: 1px solid var(--border-color); color: var(--text-tertiary);
+    font-size: 0.65rem; font-weight: 500; padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm); cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+}
+.btn-remove:hover { color: #c0392b; border-color: #c0392b; }
+
+#custom-exercises-container h2 {
+    font-family: 'Inter Tight', sans-serif; font-size: 0.75rem;
+    color: var(--text-secondary); margin-bottom: 1rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1px;
+}
     </style>
 </head>
 <body>
@@ -636,6 +704,10 @@ body {
                         </div>
                         <button class="card-link-btn" onclick="goToPage('reading')">View Details</button>
                     </div>
+                </div>
+
+                <div style="margin-top: 1.5rem; text-align: center;">
+                    <button class="card-link-btn" onclick="goToPage('workout')" style="max-width: 320px; margin: 0 auto; display: block; padding: 0.85rem 2rem; font-size: 0.9rem;">Go to Workout</button>
                 </div>
             </div>
 
@@ -778,6 +850,30 @@ body {
                             <button class="btn-primary" onclick="saveWorkoutData('marathon')">Save</button>
                             <div id="marathon-display" class="progress-display"></div>
                         </div>
+                    </div>
+
+                    <!-- Add Exercise Section -->
+                    <div class="workout-card add-exercise-section">
+                        <div class="card-header">
+                            <h3>Add Exercise</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="input-group">
+                                <label>Select Exercise</label>
+                                <select id="exercise-select">
+                                    <option value="">— Choose an exercise —</option>
+                                </select>
+                            </div>
+                            <div id="exercise-preview" style="display:none;">
+                                <div class="exercise-preview-details"></div>
+                            </div>
+                            <button class="btn-primary" onclick="addCustomExercise()">Add to Workout</button>
+                        </div>
+                    </div>
+
+                    <!-- Custom Exercises Grid -->
+                    <div id="custom-exercises-container">
+                        <div id="custom-exercises-grid" class="exercises-grid"></div>
                     </div>
                 </div>
             </div>
@@ -1064,19 +1160,20 @@ async function migrateLocalToFirebase() {
     const snapshot = await dbRef.once('value');
     const cloudData = snapshot.val();
     if (cloudData) {
-        // Cloud data exists — use it (overwrite local)
         if (cloudData.workout) localStorage.setItem('workout', JSON.stringify(cloudData.workout));
         if (cloudData.trades) localStorage.setItem('trades', JSON.stringify(cloudData.trades));
         if (cloudData.reading) localStorage.setItem('reading', JSON.stringify(cloudData.reading));
+        if (cloudData.customExercises) localStorage.setItem('customExercises', JSON.stringify(cloudData.customExercises));
     } else {
-        // No cloud data — push local data up
         const workout = getData('workout');
         const trades = getData('trades');
         const reading = getData('reading');
+        const customExercises = getData('customExercises');
         const upload = {};
         if (workout) upload.workout = workout;
         if (trades) upload.trades = trades;
         if (reading) upload.reading = reading;
+        if (customExercises) upload.customExercises = customExercises;
         if (Object.keys(upload).length > 0) await dbRef.set(upload);
     }
     refreshAllViews();
@@ -1090,6 +1187,7 @@ function listenForFirebaseChanges() {
         if (data.workout) localStorage.setItem('workout', JSON.stringify(data.workout));
         if (data.trades) localStorage.setItem('trades', JSON.stringify(data.trades));
         if (data.reading) localStorage.setItem('reading', JSON.stringify(data.reading));
+        if (data.customExercises) localStorage.setItem('customExercises', JSON.stringify(data.customExercises));
         refreshAllViews();
     });
 }
@@ -1383,6 +1481,205 @@ function formatDate(dateString) { return new Date(dateString).toLocaleDateString
 window.addEventListener('load', () => {
     document.querySelectorAll('input[type="date"]:not([value])').forEach(input => { input.value = today; });
 });
+
+// ====== EXERCISE CATALOG ======
+const exerciseCatalog = [
+    { id: 'tricep-pulldown', name: 'Tricep Pulldown', muscle: 'Triceps', equipment: 'Cable Machine', sets: 3, reps: 3, rest: '90s', goalWeight: 45, unit: 'kg', notes: '' },
+    { id: 'bicep-curls', name: 'Bicep Curls', muscle: 'Biceps', equipment: 'Dumbbells', sets: 3, reps: 3, rest: '60s', goalWeight: 20, unit: 'kg', notes: 'Focus on proper form' },
+    { id: 'shoulder-press', name: 'Shoulder Press', muscle: 'Shoulders', equipment: 'Dumbbells', sets: 3, reps: 10, rest: '90s', goalWeight: 30, unit: 'kg', notes: '' },
+    { id: 'cable-rows', name: 'Cable Rows', muscle: 'Back', equipment: 'Cable Machine', sets: 3, reps: 10, rest: '90s', goalWeight: 60, unit: 'kg', notes: '' },
+    { id: 'leg-press', name: 'Leg Press', muscle: 'Legs', equipment: 'Leg Press Machine', sets: 4, reps: 10, rest: '120s', goalWeight: 120, unit: 'kg', notes: '' },
+    { id: 'chest-fly', name: 'Chest Fly', muscle: 'Chest', equipment: 'Cable Machine', sets: 3, reps: 12, rest: '60s', goalWeight: 20, unit: 'kg', notes: '' },
+    { id: 'lateral-raise', name: 'Lateral Raise', muscle: 'Shoulders', equipment: 'Dumbbells', sets: 3, reps: 15, rest: '45s', goalWeight: 12, unit: 'kg', notes: '' },
+    { id: 'face-pulls', name: 'Face Pulls', muscle: 'Rear Delts', equipment: 'Cable Machine', sets: 3, reps: 15, rest: '45s', goalWeight: 25, unit: 'kg', notes: '' },
+    { id: 'hammer-curls', name: 'Hammer Curls', muscle: 'Biceps', equipment: 'Dumbbells', sets: 3, reps: 10, rest: '60s', goalWeight: 18, unit: 'kg', notes: '' },
+    { id: 'tricep-dips-machine', name: 'Tricep Dip Machine', muscle: 'Triceps', equipment: 'Dip Machine', sets: 3, reps: 10, rest: '60s', goalWeight: 50, unit: 'kg', notes: '' },
+    { id: 'calf-raises', name: 'Calf Raises', muscle: 'Calves', equipment: 'Smith Machine', sets: 4, reps: 15, rest: '45s', goalWeight: 60, unit: 'kg', notes: '' },
+    { id: 'deadlift', name: 'Deadlift', muscle: 'Back / Legs', equipment: 'Barbell', sets: 3, reps: 5, rest: '180s', goalWeight: 100, unit: 'kg', notes: '' },
+    { id: 'overhead-tricep', name: 'Overhead Tricep Extension', muscle: 'Triceps', equipment: 'Dumbbell', sets: 3, reps: 12, rest: '60s', goalWeight: 20, unit: 'kg', notes: '' },
+    { id: 'preacher-curl', name: 'Preacher Curl', muscle: 'Biceps', equipment: 'EZ Bar', sets: 3, reps: 10, rest: '60s', goalWeight: 25, unit: 'kg', notes: '' },
+    { id: 'leg-curl', name: 'Leg Curl', muscle: 'Hamstrings', equipment: 'Machine', sets: 3, reps: 12, rest: '60s', goalWeight: 45, unit: 'kg', notes: '' },
+    { id: 'leg-extension', name: 'Leg Extension', muscle: 'Quads', equipment: 'Machine', sets: 3, reps: 12, rest: '60s', goalWeight: 50, unit: 'kg', notes: '' }
+];
+
+const defaultExerciseIds = ['tricep-pulldown', 'bicep-curls'];
+
+function getCustomExercises() {
+    return getData('customExercises') || [];
+}
+
+function initCustomExercises() {
+    const existing = getCustomExercises();
+    if (existing.length === 0) {
+        const defaults = defaultExerciseIds.map(id => {
+            const cat = exerciseCatalog.find(e => e.id === id);
+            return { ...cat, currentWeight: null, currentReps: null, lastDate: null };
+        });
+        setData('customExercises', defaults);
+    }
+    populateExerciseDropdown();
+    renderCustomExercises();
+}
+
+function populateExerciseDropdown() {
+    const select = document.getElementById('exercise-select');
+    if (!select) return;
+    const custom = getCustomExercises();
+    const addedIds = custom.map(e => e.id);
+    select.innerHTML = '<option value="">— Choose an exercise —</option>';
+    exerciseCatalog.forEach(ex => {
+        if (!addedIds.includes(ex.id)) {
+            const opt = document.createElement('option');
+            opt.value = ex.id;
+            opt.textContent = `${ex.name} (${ex.muscle})`;
+            select.appendChild(opt);
+        }
+    });
+    select.onchange = () => {
+        const preview = document.getElementById('exercise-preview');
+        const id = select.value;
+        if (!id) { preview.style.display = 'none'; return; }
+        const ex = exerciseCatalog.find(e => e.id === id);
+        preview.style.display = 'block';
+        preview.querySelector('.exercise-preview-details').innerHTML = `
+            <div class="exercise-detail-row"><span class="exercise-detail-label">Muscle Group</span><span class="exercise-detail-value">${ex.muscle}</span></div>
+            <div class="exercise-detail-row"><span class="exercise-detail-label">Equipment</span><span class="exercise-detail-value">${ex.equipment}</span></div>
+            <div class="exercise-detail-row"><span class="exercise-detail-label">Sets × Reps</span><span class="exercise-detail-value">${ex.sets} × ${ex.reps}</span></div>
+            <div class="exercise-detail-row"><span class="exercise-detail-label">Rest</span><span class="exercise-detail-value">${ex.rest}</span></div>
+            <div class="exercise-detail-row"><span class="exercise-detail-label">Goal Weight</span><span class="exercise-detail-value">${ex.goalWeight}${ex.unit}</span></div>
+            ${ex.notes ? `<div class="exercise-detail-row"><span class="exercise-detail-label">Notes</span><span class="exercise-detail-value">${ex.notes}</span></div>` : ''}
+        `;
+    };
+}
+
+function addCustomExercise() {
+    const select = document.getElementById('exercise-select');
+    const id = select.value;
+    if (!id) { alert('Please select an exercise'); return; }
+    const cat = exerciseCatalog.find(e => e.id === id);
+    const custom = getCustomExercises();
+    custom.push({ ...cat, currentWeight: null, currentReps: null, lastDate: null });
+    setData('customExercises', custom);
+    document.getElementById('exercise-preview').style.display = 'none';
+    populateExerciseDropdown();
+    renderCustomExercises();
+}
+
+function removeCustomExercise(id) {
+    let custom = getCustomExercises();
+    custom = custom.filter(e => e.id !== id);
+    setData('customExercises', custom);
+    populateExerciseDropdown();
+    renderCustomExercises();
+}
+
+function saveCustomExercise(id) {
+    const weightInput = document.getElementById(`custom-${id}-weight`);
+    const repsInput = document.getElementById(`custom-${id}-reps`);
+    const dateInput = document.getElementById(`custom-${id}-date`);
+    const weight = weightInput ? weightInput.value : '';
+    const reps = repsInput ? repsInput.value : '';
+    const date = dateInput ? dateInput.value : '';
+    if (!weight || !reps || !date) { alert('Please fill in all fields'); return; }
+    let custom = getCustomExercises();
+    const idx = custom.findIndex(e => e.id === id);
+    if (idx !== -1) {
+        custom[idx].currentWeight = parseFloat(weight);
+        custom[idx].currentReps = parseInt(reps);
+        custom[idx].lastDate = date;
+        setData('customExercises', custom);
+        renderCustomExercises();
+        alert('Exercise data saved!');
+    }
+}
+
+function renderCustomExercises() {
+    const container = document.getElementById('custom-exercises-grid');
+    if (!container) return;
+    const custom = getCustomExercises();
+    if (custom.length === 0) {
+        container.innerHTML = '<p class="empty-state">No custom exercises added yet. Use the dropdown above to add exercises.</p>';
+        return;
+    }
+    container.innerHTML = custom.map(ex => {
+        const hasProgress = ex.currentWeight !== null && ex.currentReps !== null;
+        const goalMet = hasProgress && ex.currentWeight >= ex.goalWeight && ex.currentReps >= ex.reps;
+        const progressText = hasProgress
+            ? `${ex.currentWeight}${ex.unit} × ${ex.currentReps} reps ${goalMet ? '✓ Goal achieved!' : '— In progress'} • Last: ${formatDate(ex.lastDate)}`
+            : 'No progress logged yet';
+        const progressClass = goalMet ? 'progress-display achieved' : 'progress-display';
+        return `
+        <div class="custom-exercise-card">
+            <div class="custom-card-top">
+                <h3 style="font-family:'Inter Tight',sans-serif; font-size:1rem; font-weight:600; margin:0;">${ex.name}</h3>
+                <button class="btn-remove" onclick="removeCustomExercise('${ex.id}')">Remove</button>
+            </div>
+            <div class="exercise-meta">
+                <span class="exercise-tag muscle">${ex.muscle}</span>
+                <span class="exercise-tag equipment">${ex.equipment}</span>
+            </div>
+            ${ex.notes ? `<div class="exercise-notes">${ex.notes}</div>` : ''}
+            <div class="exercise-specs">
+                <div class="spec-item"><div class="spec-label">Sets</div><div class="spec-value">${ex.sets}</div></div>
+                <div class="spec-item"><div class="spec-label">Goal Reps</div><div class="spec-value">${ex.reps}</div></div>
+                <div class="spec-item"><div class="spec-label">Rest</div><div class="spec-value">${ex.rest}</div></div>
+            </div>
+            <span class="exercise-goal">Goal: ${ex.goalWeight}${ex.unit} × ${ex.reps} reps</span>
+            <div class="input-group" style="margin-top:0.5rem;">
+                <label>Current Weight (${ex.unit})</label>
+                <input type="number" id="custom-${ex.id}-weight" placeholder="0" step="0.5" value="${hasProgress ? ex.currentWeight : ''}">
+            </div>
+            <div class="input-group">
+                <label>Reps</label>
+                <input type="number" id="custom-${ex.id}-reps" placeholder="0" value="${hasProgress ? ex.currentReps : ''}">
+            </div>
+            <div class="input-group">
+                <label>Date</label>
+                <input type="date" id="custom-${ex.id}-date" value="${ex.lastDate || today}">
+            </div>
+            <button class="btn-primary" onclick="saveCustomExercise('${ex.id}')" style="margin-top:0.75rem;">Save</button>
+            <div class="${progressClass}">${progressText}</div>
+        </div>`;
+    }).join('');
+}
+
+// Update refreshAllViews to include custom exercises
+const _origRefreshAllViews = refreshAllViews;
+refreshAllViews = function() {
+    _origRefreshAllViews();
+    initCustomExercises();
+};
+
+// Update goToPage to refresh custom exercises on workout page
+const _origGoToPage = goToPage;
+goToPage = function(pageName) {
+    _origGoToPage(pageName);
+    if (pageName === 'workout') initCustomExercises();
+};
+
+// Also include custom exercises in the home page workout summary
+const _origUpdateWorkoutSummary = updateWorkoutSummary;
+updateWorkoutSummary = function() {
+    _origUpdateWorkoutSummary();
+    const custom = getCustomExercises();
+    const summaryDiv = document.getElementById('home-workout-summary');
+    const countdown = summaryDiv.querySelector('.countdown-section');
+    custom.forEach(ex => {
+        if (ex.currentWeight !== null && ex.currentReps !== null) {
+            const weightPct = ex.goalWeight > 0 ? (ex.currentWeight / ex.goalWeight) * 100 : 0;
+            const repsPct = ex.reps > 0 ? (ex.currentReps / ex.reps) * 100 : 0;
+            const pct = Math.min(Math.round((weightPct + repsPct) / 2), 100);
+            const row = document.createElement('div');
+            row.className = 'goal-item';
+            row.innerHTML = `<span class="goal-item-name">${ex.name}</span><span class="goal-item-current">${ex.currentWeight}${ex.unit}, ${ex.currentReps} Reps</span><span class="goal-item-goal">${ex.goalWeight}${ex.unit}, ${ex.reps} Reps</span><span class="goal-item-pct">${pct}%</span>`;
+            if (countdown) summaryDiv.insertBefore(row, countdown);
+            else summaryDiv.appendChild(row);
+        }
+    });
+};
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', () => { initCustomExercises(); });
     </script>
 </body>
 </html>
