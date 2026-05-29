@@ -673,7 +673,7 @@ body {
             <div id="workout" class="page">
                 <div class="page-header">
                     <h1>Workout Goals</h1>
-                    <p>Target weight: 70kg</p>
+                    <p>Target weight: 154lbs</p>
                 </div>
 
                 <div class="workout-container">
@@ -681,11 +681,11 @@ body {
                     <div class="workout-card">
                         <div class="card-header">
                             <h3>⚖️ Current Weight</h3>
-                            <span class="card-label">Target: 70kg</span>
+                            <span class="card-label">Target: 154lbs</span>
                         </div>
                         <div class="card-content">
                             <div class="input-group">
-                                <label>Current Weight (kg)</label>
+                                <label>Current Weight (lbs)</label>
                                 <input type="number" id="weight-input" placeholder="Enter weight" step="0.1">
                             </div>
                             <div class="input-group">
@@ -694,6 +694,7 @@ body {
                             </div>
                             <button class="btn-primary" onclick="saveWorkoutData('weight')">Save</button>
                             <div id="weight-display" class="progress-display"></div>
+                            <div id="weight-history" class="exercise-history"></div>
                         </div>
                     </div>
 
@@ -852,6 +853,7 @@ body {
                             </div>
                             <button class="btn-primary" onclick="saveWorkoutData('marathon')">Save</button>
                             <div id="marathon-display" class="progress-display"></div>
+                            <div id="marathon-history" class="exercise-history"></div>
                         </div>
                     </div>
 
@@ -1215,7 +1217,7 @@ function goToPage(pageName) {
 
 // ====== WORKOUT ======
 const workoutGoals = {
-    weight: { goal: 70, unit: 'kg' },
+    weight: { goal: 154, unit: 'lbs' },
     pullup: { weight: 40, reps: 8, unit: 'kg' },
     dips: { weight: 40, reps: 8, unit: 'kg' },
     bench: { weight: 40, reps: 8, unit: 'kg' },
@@ -1263,10 +1265,11 @@ function displayWorkoutProgress() {
         const weight = parseFloat(workout.weight.value);
         const goal = workoutGoals.weight.goal;
         const diff = (goal - weight).toFixed(1);
-        const status = weight <= goal ? '✓ Goal achieved!' : `${diff}kg away`;
-        document.getElementById('weight-display').textContent = `${weight}kg (${status}) - Last: ${formatDate(workout.weight.date)}`;
+        const status = weight <= goal ? '✓ Goal achieved!' : `${diff}lbs away`;
+        document.getElementById('weight-display').textContent = `${weight}lbs (${status}) - Last: ${formatDate(workout.weight.date)}`;
         document.getElementById('weight-display').className = weight <= goal ? 'progress-display achieved' : 'progress-display';
     }
+    renderWeightHistory();
     allExercises.forEach(exercise => {
         if (workout[exercise]) {
             const w = parseFloat(workout[exercise].weight);
@@ -1286,6 +1289,7 @@ function displayWorkoutProgress() {
         document.getElementById('marathon-display').textContent = `${distance}km (${status}) - ${daysLeft} days until deadline`;
         document.getElementById('marathon-display').className = distance >= goal ? 'progress-display achieved' : 'progress-display';
     }
+    renderMarathonHistory();
     loadWorkoutNotes();
 }
 
@@ -1308,7 +1312,39 @@ function renderExerciseHistory(exercise) {
 function toggleHistory(exercise) {
     const container = document.getElementById(`${exercise}-history`);
     container.dataset.expanded = container.dataset.expanded === 'true' ? 'false' : 'true';
-    renderExerciseHistory(exercise);
+    if (exercise === 'weight') renderWeightHistory();
+    else if (exercise === 'marathon') renderMarathonHistory();
+    else renderExerciseHistory(exercise);
+}
+
+function renderWeightHistory() {
+    const container = document.getElementById('weight-history');
+    if (!container) return;
+    const history = getData('workoutHistory') || {};
+    const entries = history.weight || [];
+    if (entries.length === 0) { container.innerHTML = ''; return; }
+    const sorted = [...entries].sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
+    const showAll = container.dataset.expanded === 'true';
+    container.innerHTML = `
+        <button class="history-toggle" onclick="toggleHistory('weight')">${showAll ? 'Hide' : 'Show'} History (${entries.length})</button>
+        ${showAll ? '<div class="history-list">' + sorted.map(e =>
+            `<div class="history-entry"><span class="history-value">${e.value}lbs</span><span class="history-date">${formatDate(e.date)}</span></div>`
+        ).join('') + '</div>' : ''}`;
+}
+
+function renderMarathonHistory() {
+    const container = document.getElementById('marathon-history');
+    if (!container) return;
+    const history = getData('workoutHistory') || {};
+    const entries = history.marathon || [];
+    if (entries.length === 0) { container.innerHTML = ''; return; }
+    const sorted = [...entries].sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
+    const showAll = container.dataset.expanded === 'true';
+    container.innerHTML = `
+        <button class="history-toggle" onclick="toggleHistory('marathon')">${showAll ? 'Hide' : 'Show'} History (${entries.length})</button>
+        ${showAll ? '<div class="history-list">' + sorted.map(e =>
+            `<div class="history-entry"><span class="history-value">${e.distance}km</span><span class="history-date">${formatDate(e.date)}</span></div>`
+        ).join('') + '</div>' : ''}`;
 }
 
 function saveWorkoutNotes() {
@@ -1476,7 +1512,7 @@ function updateWorkoutSummary() {
     if (workout.weight) {
         const weight = parseFloat(workout.weight.value), goal = workoutGoals.weight.goal;
         const pct = goal > 0 ? Math.min(Math.round((1 - Math.abs(weight - goal) / goal) * 100), 100) : 0;
-        summaryHTML += `<div class="goal-item"><span class="goal-item-name">Weight</span><span class="goal-item-current">${weight}kg</span><span class="goal-item-goal">${goal}kg</span><span class="goal-item-pct">${Math.max(pct, 0)}%</span></div>`;
+        summaryHTML += `<div class="goal-item"><span class="goal-item-name">Weight</span><span class="goal-item-current">${weight}lbs</span><span class="goal-item-goal">${goal}lbs</span><span class="goal-item-pct">${Math.max(pct, 0)}%</span></div>`;
     }
     allExercises.forEach(exercise => {
         if (workout[exercise]) {
