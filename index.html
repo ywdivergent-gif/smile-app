@@ -887,15 +887,6 @@ body {
                             <h2>Log a Trade</h2>
                             <div class="input-group-inline">
                                 <div class="input-group">
-                                    <label>Trade Size</label>
-                                    <select id="trade-size">
-                                        <option value="50">$50 Trades</option>
-                                        <option value="100">$100 Trades</option>
-                                        <option value="500">$500 Trades</option>
-                                        <option value="1000">$1000 Trades</option>
-                                    </select>
-                                </div>
-                                <div class="input-group">
                                     <label>Profit ($)</label>
                                     <input type="number" id="trade-profit" placeholder="0" step="0.01">
                                 </div>
@@ -906,64 +897,44 @@ body {
 
                     <!-- Trade Breakdown -->
                     <div class="breakdown-section">
-                        <h2>Breakdown by Trade Size</h2>
+                        <h2>Trades Needed to Reach Goal</h2>
                         <div class="breakdown-grid">
                             <div class="breakdown-card">
-                                <h3>50 Trades</h3>
+                                <h3>$50 Trades</h3>
                                 <div class="breakdown-stat">
-                                    <div class="stat-value" id="earned-50">0</div>
-                                    <div class="stat-label">Earned</div>
-                                </div>
-                                <div class="breakdown-detail">Trades: <span id="count-50">0</span></div>
-                                <div class="breakdown-detail">Needed: <span id="needed-50">600</span></div>
-                                <div class="mini-progress">
-                                    <div class="mini-progress-fill" id="progress-50" style="width: 0%"></div>
+                                    <div class="stat-value" id="needed-50">600</div>
+                                    <div class="stat-label">trades left</div>
                                 </div>
                             </div>
 
                             <div class="breakdown-card">
-                                <h3>100 Trades</h3>
+                                <h3>$100 Trades</h3>
                                 <div class="breakdown-stat">
-                                    <div class="stat-value" id="earned-100">0</div>
-                                    <div class="stat-label">Earned</div>
-                                </div>
-                                <div class="breakdown-detail">Trades: <span id="count-100">0</span></div>
-                                <div class="breakdown-detail">Needed: <span id="needed-100">300</span></div>
-                                <div class="mini-progress">
-                                    <div class="mini-progress-fill" id="progress-100" style="width: 0%"></div>
+                                    <div class="stat-value" id="needed-100">300</div>
+                                    <div class="stat-label">trades left</div>
                                 </div>
                             </div>
 
                             <div class="breakdown-card">
-                                <h3>500 Trades</h3>
+                                <h3>$500 Trades</h3>
                                 <div class="breakdown-stat">
-                                    <div class="stat-value" id="earned-500">0</div>
-                                    <div class="stat-label">Earned</div>
-                                </div>
-                                <div class="breakdown-detail">Trades: <span id="count-500">0</span></div>
-                                <div class="breakdown-detail">Needed: <span id="needed-500">60</span></div>
-                                <div class="mini-progress">
-                                    <div class="mini-progress-fill" id="progress-500" style="width: 0%"></div>
+                                    <div class="stat-value" id="needed-500">60</div>
+                                    <div class="stat-label">trades left</div>
                                 </div>
                             </div>
 
                             <div class="breakdown-card">
-                                <h3>1000 Trades</h3>
+                                <h3>$1000 Trades</h3>
                                 <div class="breakdown-stat">
-                                    <div class="stat-value" id="earned-1000">0</div>
-                                    <div class="stat-label">Earned</div>
-                                </div>
-                                <div class="breakdown-detail">Trades: <span id="count-1000">0</span></div>
-                                <div class="breakdown-detail">Needed: <span id="needed-1000">30</span></div>
-                                <div class="mini-progress">
-                                    <div class="mini-progress-fill" id="progress-1000" style="width: 0%"></div>
+                                    <div class="stat-value" id="needed-1000">30</div>
+                                    <div class="stat-label">trades left</div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Trade History (hidden for compact view) -->
-                    <div class="history-section" style="display: none;">
+                    <!-- Trade History -->
+                    <div class="history-section">
                         <h2>Recent Trades</h2>
                         <div id="trade-history" class="trade-list">
                             <p class="empty-state">No trades logged yet</p>
@@ -1425,18 +1396,17 @@ function editTrades() {
     } else {
         const diff = target - totalEarned;
         let updatedTrades = getData('trades') || [];
-        updatedTrades.push({ size: 50, profit: diff, date: today, id: Date.now(), note: 'Manual adjustment' });
+        updatedTrades.push({ profit: diff, date: today, id: Date.now(), note: 'Manual adjustment' });
         setData('trades', updatedTrades);
         displayTradeProgress();
     }
 }
 
 function addTrade() {
-    const size = parseInt(document.getElementById('trade-size').value);
     const profit = parseFloat(document.getElementById('trade-profit').value);
     if (!profit || profit <= 0) { alert('Please enter a valid profit amount'); return; }
     let trades = getData('trades') || [];
-    trades.push({ size, profit, date: today, id: Date.now() });
+    trades.push({ profit, date: today, id: Date.now() });
     setData('trades', trades);
     document.getElementById('trade-profit').value = '';
     displayTradeProgress();
@@ -1446,18 +1416,15 @@ function addTrade() {
 function displayTradeProgress() {
     const trades = getData('trades') || [];
     const goal = 30000;
-    const bySize = { 50: { earned: 0, count: 0 }, 100: { earned: 0, count: 0 }, 500: { earned: 0, count: 0 }, 1000: { earned: 0, count: 0 } };
     let totalEarned = 0;
-    trades.forEach(trade => { bySize[trade.size].earned += trade.profit; bySize[trade.size].count += 1; totalEarned += trade.profit; });
+    trades.forEach(trade => { totalEarned += trade.profit; });
     document.getElementById('total-earned').textContent = Math.round(totalEarned);
     const progressPercent = (totalEarned / goal) * 100;
     document.getElementById('overall-progress').style.width = Math.min(progressPercent, 100) + '%';
     document.getElementById('progress-percentage').textContent = `${progressPercent.toFixed(1)}% complete`;
+    const remaining = Math.max(goal - totalEarned, 0);
     [50, 100, 500, 1000].forEach(size => {
-        document.getElementById(`earned-${size}`).textContent = Math.round(bySize[size].earned);
-        document.getElementById(`count-${size}`).textContent = bySize[size].count;
-        document.getElementById(`needed-${size}`).textContent = Math.ceil((goal - totalEarned) / size);
-        document.getElementById(`progress-${size}`).style.width = Math.min((bySize[size].earned / goal) * 100, 100) + '%';
+        document.getElementById(`needed-${size}`).textContent = remaining > 0 ? Math.ceil(remaining / size) : 0;
     });
     displayTradeHistory(trades);
 }
@@ -1465,9 +1432,9 @@ function displayTradeProgress() {
 function displayTradeHistory(trades) {
     const historyDiv = document.getElementById('trade-history');
     if (trades.length === 0) { historyDiv.innerHTML = '<p class="empty-state">No trades logged yet</p>'; return; }
-    const sortedTrades = [...trades].sort((a, b) => b.date.localeCompare(a.date));
+    const sortedTrades = [...trades].sort((a, b) => (b.id || 0) - (a.id || 0));
     historyDiv.innerHTML = sortedTrades.map(trade => `
-        <div class="trade-item"><div class="trade-item-left"><div class="trade-item-size">${trade.size} Trade</div><div class="trade-item-date">${formatDate(trade.date)}</div></div><div class="trade-item-profit">+${Math.round(trade.profit)}</div></div>
+        <div class="trade-item"><div class="trade-item-left"><div class="trade-item-size">Trade</div><div class="trade-item-date">${formatDate(trade.date)}</div></div><div class="trade-item-profit">+$${Math.round(trade.profit)}</div></div>
     `).join('');
 }
 
